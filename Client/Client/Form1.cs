@@ -124,17 +124,7 @@ public Form1()
                                     MessageBox.Show("CheckData read" + E.Message);
                                 }
                             }
-                            try
-                            {
-                                //On remplit le richtextbox avec les données reues 
-                                //lorsqu'on a tout réceptionné
-                                chatBody.Rtf = rtfStart + rtfContent;
-                                this.BringToFront();
-                            }
-                            catch (Exception E)
-                            {
-                                MessageBox.Show(E.Message);
-                            }
+                            UpdateChatBody(rtfContent);
 
                         }
                     }
@@ -150,7 +140,31 @@ public Form1()
                 Thread.ResetAbort();
             }
         }
-        
+
+        private delegate void UpdateChatBodyDelegate(string str);
+
+        private void UpdateChatBody(string str)
+        {
+            try
+            {
+                //On remplit le richtextbox avec les données reues 
+                //lorsqu'on a tout réceptionné
+                if (chatBody.InvokeRequired)
+                {
+                    chatBody.Invoke(new UpdateChatBodyDelegate(this.UpdateChatBody), str);
+                }
+                else
+                {
+                    chatBody.Rtf = rtfStart + str;
+                }
+                this.BringToFront();
+            }
+            catch (Exception E)
+            {
+                MessageBox.Show(E.Message);
+            }
+        }
+
         //Cette méthode génère le numéro de séquence collé en
         //entte du message envoyé au serveur
         string GetSequence()
@@ -162,30 +176,16 @@ public Form1()
             return msgSeq;
         }
 
-        //Cette méthode provoque l'auto-scroll du richtextbox dès
-
-        void HandleAutoScroll(object sender, System.EventArgs e)
-        {
-            chatBody.SelectionStart = chatBody.Rtf.Length;
-            chatBody.Focus();
-            msgArea.Focus();
-        }
-
-        void MainFormLoad(object sender, System.EventArgs e)
-        {
-            getParams();
-        }
-
         private void Connect_Click(object sender, EventArgs e)
         {
             if (Nick.Text == "")
             {
-                MessageBox.Show("Le pseudo ne peut tre null");
+                MessageBox.Show("Le pseudo ne peut être null");
                 return;
             }
             if (ServerHost.Text == "")
             {
-                MessageBox.Show("Le nom du serveur ne peut tre null");
+                MessageBox.Show("Le nom du serveur ne peut être null");
                 return;
             }
             //On formatte le pseudo sur une longueur de 15 caractères
