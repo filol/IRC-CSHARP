@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Net;
 using System.Net.Sockets;
@@ -208,15 +210,15 @@ namespace Client
 
         private void create_Click(object sender, EventArgs e)
         {
-            string value = "Document 1";
-            if (InputBox("New document", "New document name:", ref value) == DialogResult.OK)
+            string value = "new channel";
+            if (InputBox("Créé un channel", "New channel name:", ref value, true) == DialogResult.OK)
             {
                 currentChannel = value;
                 UpdateChatBody(new Message());
             }
         }
 
-        public static DialogResult InputBox(string title, string promptText, ref string value)
+        public static DialogResult InputBox(string title, string promptText, ref string value, bool input)
         {
             Form form = new Form();
             Label label = new Label();
@@ -253,9 +255,72 @@ namespace Client
             form.AcceptButton = buttonOk;
             form.CancelButton = buttonCancel;
 
+            if (input)
+            {
+                label.Visible = false;
+                textBox.Visible = false;
+            }
+
             DialogResult dialogResult = form.ShowDialog();
             value = textBox.Text;
             return dialogResult;
+        }
+
+        private bool checkUserAccount(string username, string password)
+        {
+            SqlConnection myConnection = new SqlConnection("user id=francois;" +
+                                                           "password=francois%123%;" +
+                                                           "server=151.80.145.4;" +
+                                                           "Trusted_Connection=yes;" +
+                                                           "database=francois; " +
+                                                           "connection timeout=30");
+            try
+            {
+                myConnection.Open();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }   
+
+
+            try
+            {
+                SqlDataReader myReader = null;
+                SqlCommand myCommand = new SqlCommand("SELECT * FROM `projetcsharp` WHERE `username` LIKE '"+username+"'",
+                    myConnection);
+                myReader = myCommand.ExecuteReader();
+                if (!myReader.Read()) //Pas d'utilisateur enregistré
+                {
+                    //TODO
+                    string value = "new channel";
+                    if (InputBox("Créé un channel", "New channel name:", ref value, true) == DialogResult.OK)
+                    {
+                        // Insert inside db
+                        SqlCommand myCommand2 = new SqlCommand("INSERT INTO `projetcsharp`(`username`, `password`) VALUES('francois2', '123')", myConnection);
+                        myCommand2.ExecuteNonQuery();
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                }
+                else
+                {
+                    if (myReader.GetString(1) == password) //Connexion ok
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+
+            return false;
         }
     }
 }
