@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.chanelList = new System.Windows.Forms.ListBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.join = new System.Windows.Forms.Button();
+            this.create = new System.Windows.Forms.Button();
             this.msgArea = new System.Windows.Forms.TextBox();
             this.button3 = new System.Windows.Forms.Button();
             this.Connect = new System.Windows.Forms.Button();
@@ -52,25 +52,27 @@
             this.chanelList.Size = new System.Drawing.Size(140, 238);
             this.chanelList.TabIndex = 0;
             // 
-            // button1
+            // join
             // 
-            this.button1.Location = new System.Drawing.Point(9, 279);
-            this.button1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(139, 19);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Rejoindre";
-            this.button1.UseVisualStyleBackColor = true;
+            this.join.Location = new System.Drawing.Point(9, 279);
+            this.join.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.join.Name = "join";
+            this.join.Size = new System.Drawing.Size(139, 19);
+            this.join.TabIndex = 1;
+            this.join.Text = "Rejoindre";
+            this.join.UseVisualStyleBackColor = true;
+            this.join.Click += new System.EventHandler(this.join_Click);
             // 
-            // button2
+            // create
             // 
-            this.button2.Location = new System.Drawing.Point(9, 303);
-            this.button2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(139, 19);
-            this.button2.TabIndex = 2;
-            this.button2.Text = "Creer";
-            this.button2.UseVisualStyleBackColor = true;
+            this.create.Location = new System.Drawing.Point(9, 303);
+            this.create.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.create.Name = "create";
+            this.create.Size = new System.Drawing.Size(139, 19);
+            this.create.TabIndex = 2;
+            this.create.Text = "Creer";
+            this.create.UseVisualStyleBackColor = true;
+            this.create.Click += new System.EventHandler(this.create_Click);
             // 
             // msgArea
             // 
@@ -180,8 +182,8 @@
             this.Controls.Add(this.Connect);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.msgArea);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.create);
+            this.Controls.Add(this.join);
             this.Controls.Add(this.chanelList);
             this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "Form1";
@@ -196,8 +198,8 @@
         #endregion
 
         private System.Windows.Forms.ListBox chanelList;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button join;
+        private System.Windows.Forms.Button create;
         private System.Windows.Forms.TextBox msgArea;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button Connect;
