@@ -19,11 +19,8 @@ namespace Utils
 
         public static Message rcvMsg(Stream s)
         {
-       
-                BinaryFormatter bf = new BinaryFormatter();
-                return (Message)bf.Deserialize(s);
-            
-            
+            BinaryFormatter bf = new BinaryFormatter();
+            return (Message)bf.Deserialize(s);
         }
     }
 }

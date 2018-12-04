@@ -14,12 +14,27 @@ namespace Server
 {
     class Server
     {
-        //Recommended port 7581
+        //Recommended port 7581 // 8976
         private int port;
         private static Dictionary<string, Dictionary<string, TcpClient>> chanels;
         public Server(int port)
         {
             this.port = port;
+        }
+
+        private static List<string> _channelList;
+        private static List<string> channelList
+        {
+            get
+            {
+                _channelList = new List<string>();
+                foreach (string chanel in chanels.Keys)
+                {
+                    _channelList.Add(chanel);
+                }
+
+                return _channelList;
+            }
         }
 
         public void start()
@@ -83,6 +98,7 @@ namespace Server
                                 newMessage.author = "Server";
                                 newMessage.message = "Error pseudo already exist";
                                 newMessage.channel = "Général";
+                                newMessage.ChannelList = channelList;
                                 newMessage.code = 1;
                                 Thread thread = new Thread(() => Utils.Utils.sendMsg(comm.GetStream(), newMessage));
                                 thread.Start();
@@ -92,9 +108,10 @@ namespace Server
                             {
                                 Message newMessage = new Message();
                                 newMessage.author = "Server";
-                                newMessage.message = "Error pseudo already exist";
+                                newMessage.message = msg.author+" vient de se connecter";
                                 newMessage.channel = "Général";
-                                newMessage.code = 1;
+                                newMessage.ChannelList = channelList;
+                                newMessage.code = 0;
 
                                 Thread thread = new Thread(() => SendMessageToAll(chanels[msg.channel], newMessage));
                                 thread.Start();
@@ -105,10 +122,10 @@ namespace Server
                                 welcomeMessage.author = "Server";
                                 welcomeMessage.message = "Welcome !";
                                 welcomeMessage.channel = "Général";
+                                welcomeMessage.ChannelList = channelList;
                                 welcomeMessage.code = 0;
                                 Thread thread2 = new Thread(() => Utils.Utils.sendMsg(comm.GetStream(), welcomeMessage));
                                 thread2.Start();
-
                             }
                         }
 

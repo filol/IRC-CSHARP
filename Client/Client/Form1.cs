@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -32,7 +33,7 @@ namespace Client
 
         }
 
-        private void ReceiveMessages()
+        private void ReceiveMessages(TcpClient comm)
         {
             while (true)
             {
@@ -40,11 +41,29 @@ namespace Client
                 {
                     Utils.Message message = Utils.Utils.rcvMsg(comm.GetStream());
                     UpdateChatBody(message);
+                    UpdateListChannel(message.ChannelList);
                 }
                 else //On est plus connecté donc on arrête tout
                 {
                     MessageBox.Show("Disconnected");
                     Thread.CurrentThread.Abort();
+                }
+            }
+        }
+
+        private delegate void UpdateListChannelDelegate(List<string> chanelsList);
+        private void UpdateListChannel(List<string> chanelsList)
+        {
+            if (chanelList.InvokeRequired)
+            {
+                chanelList.Invoke(new UpdateListChannelDelegate(UpdateListChannel), chanelsList);
+            }
+            else
+            {
+                chanelList.Items.Clear();
+                foreach (string channel in chanelsList)
+                {
+                    chanelList.Items.Add(channel);
                 }
             }
         }
@@ -84,7 +103,7 @@ namespace Client
                 return;
             }
 
-            comm = new TcpClient(ServerHost.Text, 7581);
+            comm = new TcpClient(ServerHost.Text, 8976);
             Nickname = Nick.Text;
             Utils.Message message = new Utils.Message();
             message.author = Nickname;
@@ -104,7 +123,7 @@ namespace Client
                 }
 
                 UpdateChatBody(response);
-                ReceiveMessageThread = new Thread(ReceiveMessages);
+                ReceiveMessageThread = new Thread(() => ReceiveMessages(comm));
                 ReceiveMessageThread.Start();
                 
             
