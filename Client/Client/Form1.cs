@@ -22,10 +22,7 @@ namespace Client
         private Dictionary<string, List<Message>> channels;
         private string currentChannel;
 
-       
-        //Je mets cette déclaration sur 3 lignes pour ne pas avoir de scroll horizontale :)
-        //C'est en fait la déclaration de début d'un document RTF (merci wordpad) 
-        private const string rtfStart = "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Arial;}{\\f1\\fswiss\\fprq2\\fcharset0 Arial;}}{\\colortbl ;\\red0\\green0\\blue128;\\red0\\green128\\blue0;}\\viewkind4\\uc1";
+
         private string rtfContent = null;
 
         public Form1()
@@ -34,7 +31,12 @@ namespace Client
             Console.WriteLine("Program launch");
             currentChannel = "Général";
             channels = new Dictionary<string, List<Message>>();
-            channels.Add("Général",new List<Message>());
+            channels.Add("Général", new List<Message>());
+            List<string> list  = new List<string>();
+            list.Add("Général");
+            UpdateListChannel(list);
+            ServerHost.Text = "127.0.0.1";
+            Nick.Text = "Francois";
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -48,15 +50,24 @@ namespace Client
             {
                 if (comm.Connected)
                 {
-                    Utils.Message message = Utils.Utils.rcvMsg(comm.GetStream());
+                    Message message = Utils.Utils.rcvMsg(comm.GetStream());
+                    Console.WriteLine(message);
+                    if (!channels.ContainsKey(message.channel))
+                    {
+                        channels.Add(message.channel,new List<Message>());
+                    }
+                    channels[message.channel].Add(message);
                     UpdateChatBody(message);
-                    UpdateListChannel(message.ChannelList);
-                    channels[currentChannel].Add(message);
+                    if (message.code==3)
+                    {
+                        Console.WriteLine("Chat body clear");
+                        clearChatBody();
+                    }
+                    UpdateListChannel(new List<string>(channels.Keys));
                 }
                 else //On est plus connecté donc on arrête tout
                 {
                     MessageBox.Show("Disconnected");
-                    Thread.CurrentThread.Abort();
                 }
             }
         }
@@ -78,23 +89,38 @@ namespace Client
             }
         }
 
-
-        private delegate void UpdateChatBodyDelegate(Utils.Message msg);
-
-        private void UpdateChatBody(Utils.Message msg)
+        private delegate void clearChatBodyDelegate();
+        private void clearChatBody()
         {
-            Console.WriteLine("Message recu : "+msg.message);
+            if (chatBody.InvokeRequired)
+            {
+                chatBody.Invoke(new clearChatBodyDelegate(clearChatBody));
+            }
+            else
+            {
+                chatBody.Clear();
+            }
+        }
 
-                //On remplit le richtextbox avec les données reues 
-                //lorsqu'on a tout réceptionné
-                if (chatBody.InvokeRequired)
+        private delegate void UpdateChatBodyDelegate(Message msg);
+
+        private void UpdateChatBody(Message msg)
+        {
+            Console.WriteLine("Message recu : " + msg);
+
+            //On remplit le richtextbox avec les données reues 
+            //lorsqu'on a tout réceptionné
+            if (chatBody.InvokeRequired)
+            {
+                chatBody.Invoke(new UpdateChatBodyDelegate(UpdateChatBody), msg);
+            }
+            else
+            {
+                if (msg.channel==currentChannel)
                 {
-                    chatBody.Invoke(new UpdateChatBodyDelegate(UpdateChatBody), msg);
+                    chatBody.Text += msg.author + " say : " + msg.message + "\n";
                 }
-                else
-                {
-                    chatBody.Text += msg.author + "say : " + msg.message+"\n";
-                }
+            }
         }
 
         private delegate void UpdateChatBodyDelegateList(List<Message> msg);
@@ -109,7 +135,7 @@ namespace Client
             {
                 foreach (Message message in msg)
                 {
-                    chatBody.Text += message.author + "say : " + message.message + "\n";
+                    chatBody.Text += message.author + " say : " + message.message + "\n";
                 }
             }
         }
@@ -127,30 +153,33 @@ namespace Client
                 return;
             }
 
+            //if (!checkUserAccount(Nick.Text,Password.Text))
+            //{
+            //    Console.WriteLine("Failed to connect");
+            //    return;
+            //}
+
             comm = new TcpClient(ServerHost.Text, 8976);
             Nickname = Nick.Text;
             Utils.Message message = new Utils.Message();
             message.author = Nickname;
             message.channel = "Général";
             message.code = -1;
-            Utils.Utils.sendMsg(comm.GetStream(),message);
-            Utils.Message response = Utils.Utils.rcvMsg(comm.GetStream());
-            if (response.code!=0) //Erreur, something wrong
+            string msg2 = "Hello";
+            Utils.Utils.sendMsg(comm.GetStream(), message);
+            Message response = Utils.Utils.rcvMsg(comm.GetStream());
+            if (response.code != 0) //Erreur, something wrong
             {
                 MessageBox.Show(response.message);
             }
 
-                //Si on était précedement connecté on stop le thread
-                if (ReceiveMessageThread != null)
-                {
-                    ReceiveMessageThread.Abort();
-                }
 
-                UpdateChatBody(response);
-                ReceiveMessageThread = new Thread(() => ReceiveMessages(comm));
-                ReceiveMessageThread.Start();
-                
-            
+            //Si on était précedement connecté on stop le thread
+            UpdateChatBody(response);
+            ReceiveMessageThread = new Thread(() => ReceiveMessages(comm));
+            ReceiveMessageThread.Start();
+
+
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -170,7 +199,7 @@ namespace Client
             }
             if (comm != null && comm.Connected)
             {
-                    comm.Close();
+                comm.Close();
             }
         }
 
@@ -190,9 +219,9 @@ namespace Client
                     Utils.Message message = new Utils.Message();
                     message.author = Nickname;
                     message.message = msgArea.Text;
-                    message.channel = "Général";
+                    message.channel = currentChannel;
                     message.code = 0;
-                    Utils.Utils.sendMsg(comm.GetStream(),message);
+                    Utils.Utils.sendMsg(comm.GetStream(), message);
                     msgArea.Clear();
                 }
             }
@@ -204,8 +233,25 @@ namespace Client
 
         private void join_Click(object sender, EventArgs e)
         {
+            if (chanelList.SelectedItem == null)
+            {
+                MessageBox.Show("Vous devez selectionner un topics");
+                return;
+            }
             currentChannel = chanelList.SelectedItem.ToString();
+            if (!channels.ContainsKey(chanelList.SelectedItem.ToString())) //Si le topic n'existe pas on l'ajoute dans notre dictionnaire
+            {
+                channels.Add(currentChannel, new List<Message>());
+            }
+            chatBody.Clear();
             UpdateChatBody(channels[currentChannel]);
+
+            //Message pour être inscrit dans la liste des utilisateurs dans le channel
+            Message message = new Message();
+            message.author = Nickname;
+            message.channel = currentChannel;
+            message.code = 2;
+            Utils.Utils.sendMsg(comm.GetStream(), message);
         }
 
         private void create_Click(object sender, EventArgs e)
@@ -214,7 +260,11 @@ namespace Client
             if (InputBox("Créé un channel", "New channel name:", ref value, true) == DialogResult.OK)
             {
                 currentChannel = value;
-                UpdateChatBody(new Message());
+                Message message = new Message();
+                message.author = Nickname;
+                message.channel = currentChannel;
+                message.code = 2;
+                Utils.Utils.sendMsg(comm.GetStream(),message);
             }
         }
 
@@ -255,7 +305,7 @@ namespace Client
             form.AcceptButton = buttonOk;
             form.CancelButton = buttonCancel;
 
-            if (input)
+            if (!input)
             {
                 label.Visible = false;
                 textBox.Visible = false;
@@ -268,12 +318,12 @@ namespace Client
 
         private bool checkUserAccount(string username, string password)
         {
-            SqlConnection myConnection = new SqlConnection("user id=francois;" +
+            SqlConnection myConnection = new SqlConnection("Data Source=151.80.145.4;" + 
+                                                           "User Id=francois;" +
                                                            "password=francois%123%;" +
-                                                           "server=151.80.145.4;" +
-                                                           "Trusted_Connection=yes;" +
-                                                           "database=francois; " +
-                                                           "connection timeout=30");
+                                                           "database=francois; ");
+
+
             try
             {
                 myConnection.Open();
@@ -281,14 +331,13 @@ namespace Client
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
-            }   
+            }
 
 
             try
             {
                 SqlDataReader myReader = null;
-                SqlCommand myCommand = new SqlCommand("SELECT * FROM `projetcsharp` WHERE `username` LIKE '"+username+"'",
-                    myConnection);
+                SqlCommand myCommand = new SqlCommand("SELECT * FROM `projetcsharp` WHERE `username` LIKE '" + username + "'", myConnection);
                 myReader = myCommand.ExecuteReader();
                 if (!myReader.Read()) //Pas d'utilisateur enregistré
                 {

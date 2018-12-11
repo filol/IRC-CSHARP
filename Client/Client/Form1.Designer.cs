@@ -37,7 +37,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.Nick = new System.Windows.Forms.TextBox();
-            this.textBox4 = new System.Windows.Forms.TextBox();
+            this.Password = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.ServerHost = new System.Windows.Forms.TextBox();
             this.chatBody = new System.Windows.Forms.RichTextBox();
@@ -47,7 +47,7 @@
             // 
             this.chanelList.FormattingEnabled = true;
             this.chanelList.Location = new System.Drawing.Point(9, 36);
-            this.chanelList.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.chanelList.Margin = new System.Windows.Forms.Padding(2);
             this.chanelList.Name = "chanelList";
             this.chanelList.Size = new System.Drawing.Size(140, 238);
             this.chanelList.TabIndex = 0;
@@ -55,7 +55,7 @@
             // join
             // 
             this.join.Location = new System.Drawing.Point(9, 279);
-            this.join.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.join.Margin = new System.Windows.Forms.Padding(2);
             this.join.Name = "join";
             this.join.Size = new System.Drawing.Size(139, 19);
             this.join.TabIndex = 1;
@@ -66,7 +66,7 @@
             // create
             // 
             this.create.Location = new System.Drawing.Point(9, 303);
-            this.create.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.create.Margin = new System.Windows.Forms.Padding(2);
             this.create.Name = "create";
             this.create.Size = new System.Drawing.Size(139, 19);
             this.create.TabIndex = 2;
@@ -77,7 +77,7 @@
             // msgArea
             // 
             this.msgArea.Location = new System.Drawing.Point(175, 303);
-            this.msgArea.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.msgArea.Margin = new System.Windows.Forms.Padding(2);
             this.msgArea.Name = "msgArea";
             this.msgArea.Size = new System.Drawing.Size(306, 20);
             this.msgArea.TabIndex = 3;
@@ -85,7 +85,7 @@
             // button3
             // 
             this.button3.Location = new System.Drawing.Point(485, 302);
-            this.button3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.button3.Margin = new System.Windows.Forms.Padding(2);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(106, 19);
             this.button3.TabIndex = 5;
@@ -96,7 +96,7 @@
             // Connect
             // 
             this.Connect.Location = new System.Drawing.Point(535, 9);
-            this.Connect.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Connect.Margin = new System.Windows.Forms.Padding(2);
             this.Connect.Name = "Connect";
             this.Connect.Size = new System.Drawing.Size(56, 19);
             this.Connect.TabIndex = 6;
@@ -127,18 +127,18 @@
             // Nick
             // 
             this.Nick.Location = new System.Drawing.Point(231, 10);
-            this.Nick.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Nick.Margin = new System.Windows.Forms.Padding(2);
             this.Nick.Name = "Nick";
             this.Nick.Size = new System.Drawing.Size(111, 20);
             this.Nick.TabIndex = 9;
             // 
-            // textBox4
+            // Password
             // 
-            this.textBox4.Location = new System.Drawing.Point(420, 10);
-            this.textBox4.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.textBox4.Name = "textBox4";
-            this.textBox4.Size = new System.Drawing.Size(111, 20);
-            this.textBox4.TabIndex = 10;
+            this.Password.Location = new System.Drawing.Point(420, 10);
+            this.Password.Margin = new System.Windows.Forms.Padding(2);
+            this.Password.Name = "Password";
+            this.Password.Size = new System.Drawing.Size(111, 20);
+            this.Password.TabIndex = 10;
             // 
             // label3
             // 
@@ -153,7 +153,7 @@
             // ServerHost
             // 
             this.ServerHost.Location = new System.Drawing.Point(52, 7);
-            this.ServerHost.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.ServerHost.Margin = new System.Windows.Forms.Padding(2);
             this.ServerHost.Name = "ServerHost";
             this.ServerHost.Size = new System.Drawing.Size(97, 20);
             this.ServerHost.TabIndex = 12;
@@ -161,7 +161,7 @@
             // chatBody
             // 
             this.chatBody.Location = new System.Drawing.Point(175, 36);
-            this.chatBody.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.chatBody.Margin = new System.Windows.Forms.Padding(2);
             this.chatBody.Name = "chatBody";
             this.chatBody.Size = new System.Drawing.Size(417, 262);
             this.chatBody.TabIndex = 13;
@@ -175,7 +175,7 @@
             this.Controls.Add(this.chatBody);
             this.Controls.Add(this.ServerHost);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.textBox4);
+            this.Controls.Add(this.Password);
             this.Controls.Add(this.Nick);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -185,7 +185,7 @@
             this.Controls.Add(this.create);
             this.Controls.Add(this.join);
             this.Controls.Add(this.chanelList);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form1";
             this.Text = "Form1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
@@ -206,7 +206,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox Nick;
-        private System.Windows.Forms.TextBox textBox4;
+        private System.Windows.Forms.TextBox Password;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox ServerHost;
         private System.Windows.Forms.RichTextBox chatBody;
