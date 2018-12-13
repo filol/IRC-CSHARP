@@ -18,6 +18,7 @@ namespace Server
         //Recommended port 7581 // 8976
         private int port;
         private static Dictionary<string, Dictionary<string, TcpClient>> chanels;
+        private static readonly object DictionaryLock = new object();
         public Server(int port)
         {
             this.port = port;
@@ -126,16 +127,12 @@ namespace Server
                                 //newMessage.ChannelList = channelList;
                                 newMessage.code = 0;
 
-                                //Console.WriteLine("SERVER : list channel");
-                                //foreach (string chanel in newMessage.ChannelList)
-                                //{
-                                //    Console.WriteLine(chanel);
-                                //}
-
                                 SendMessageToAllInChannel(chanels[msg.channel], newMessage);
-
-                                chanels[msg.channel].Add(msg.author, comm);
-
+                                lock (DictionaryLock)
+                                {
+                                    chanels[msg.channel].Add(msg.author, comm);
+                                }
+                                SendUsersConnected(msg.channel);
                                 //On envoie tous les channels existant au ptit nouveau
                                 if (chanels.Keys.Count>1)
                                 {
@@ -171,7 +168,11 @@ namespace Server
                             {
                                 if (!chanels[msg.channel].ContainsKey(msg.author))
                                 {
-                                    chanels[msg.channel].Add(msg.author, comm);
+                                    lock (DictionaryLock)
+                                    {
+                                        chanels[msg.channel].Add(msg.author, comm);
+                                    }
+
                                     message.channel = msg.channel;
                                     message.message = msg.author + " a rejoint : " + msg.channel;
                                     message.code = 0;
@@ -190,8 +191,12 @@ namespace Server
                             }
                             else //le channel n'existe pas
                             {
-                                chanels.Add(msg.channel,new Dictionary<string, TcpClient>());
-                                chanels[msg.channel].Add(msg.author, comm);
+                                lock (DictionaryLock)
+                                {
+                                    chanels.Add(msg.channel, new Dictionary<string, TcpClient>());
+                                    chanels[msg.channel].Add(msg.author, comm);
+                                }
+
                                 Utils.Utils.sendMsg(comm.GetStream(),new Message(msg.channel, 3));
                                 message.channel = msg.channel;
                                 message.message = msg.author + " a créé : " + msg.channel;
@@ -209,6 +214,23 @@ namespace Server
                                 }
                             }
                             
+                        }
+
+                        if (msg.code == 5) //Private message
+                        {
+                            string destinataire = msg.channel;
+                            msg.channel = msg.author;
+                            foreach (Dictionary<string, TcpClient> chanel in chanels.Values)
+                            {
+                                if (chanel.ContainsKey(destinataire))
+                                {
+                                    Utils.Utils.sendMsg(chanel[destinataire].GetStream(),msg);
+                                    msg.channel = destinataire;
+                                    Utils.Utils.sendMsg(comm.GetStream(),msg);
+                                }
+                            }
+
+
                         }
 
                     }
@@ -248,7 +270,27 @@ namespace Server
                         }
                     }
                 }
-                
+            }
+
+            public void SendUsersConnected(string chanel)
+            {
+                List<string> listUsers = new List<string>();
+                foreach (string userName in chanels[chanel].Keys)
+                {
+                    listUsers.Add(userName);
+                }
+
+                Message message = new Message();
+                message.channel = chanel;
+                message.message = String.Join(",", listUsers.ToArray()); ;
+                message.code = 4;
+                message.author = "Server";
+
+                SendMessageToAllInChannel(chanels[chanel],message);
+
+                //String to list string
+                //List<string> result = names.Split(',').ToList();
+
             }
         }
     }

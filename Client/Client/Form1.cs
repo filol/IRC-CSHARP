@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -20,6 +21,7 @@ namespace Client
         private Thread ReceiveMessageThread = null;
         private string Nickname = null;
         private Dictionary<string, List<Message>> channels;
+        private List<string> privateChannels;
         private string currentChannel;
 
 
@@ -37,6 +39,7 @@ namespace Client
             UpdateListChannel(list);
             ServerHost.Text = "127.0.0.1";
             Nick.Text = "Francois";
+            privateChannels = new List<string>();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -56,6 +59,18 @@ namespace Client
                     {
                         channels.Add(message.channel,new List<Message>());
                     }
+
+                    if (message.code==4) //On nous envoi les liste des utilisateurs dans le channel
+                    {
+                        List<string> result = message.message.Split(',').ToList();
+                        UpdateListUser(result);
+                        continue;
+                    }
+
+                    if (message.code == 5)
+                    {
+                        privateChannels.Add(message.channel);
+                    }
                     channels[message.channel].Add(message);
                     UpdateChatBody(message);
                     if (message.code==3)
@@ -63,11 +78,29 @@ namespace Client
                         Console.WriteLine("Chat body clear");
                         clearChatBody();
                     }
+
                     UpdateListChannel(new List<string>(channels.Keys));
                 }
                 else //On est plus connecté donc on arrête tout
                 {
                     MessageBox.Show("Disconnected");
+                }
+            }
+        }
+
+        private delegate void UpdateListUserDelegate(List<string> userList);
+        private void UpdateListUser(List<string> userList)
+        {
+            if (chanelList.InvokeRequired)
+            {
+                chanelList.Invoke(new UpdateListUserDelegate(UpdateListUser), userList);
+            }
+            else
+            {
+                usersListBox.Items.Clear();
+                foreach (string Username in userList)
+                {
+                    usersListBox.Items.Add(Username);
                 }
             }
         }
@@ -201,6 +234,7 @@ namespace Client
             {
                 comm.Close();
             }
+            this.Close();
         }
 
         //Clic sur le bouton envoyer
@@ -216,6 +250,11 @@ namespace Client
             {
                 if (msgArea.Text != "")
                 {
+                    if (privateChannels.Contains(currentChannel))
+                    {
+                        usersListBox.SetSelected(usersListBox.Items.IndexOf(currentChannel),true);
+                        SendPM_Click(null,null);
+                    }
                     Utils.Message message = new Utils.Message();
                     message.author = Nickname;
                     message.message = msgArea.Text;
@@ -239,6 +278,12 @@ namespace Client
                 return;
             }
             currentChannel = chanelList.SelectedItem.ToString();
+            if (privateChannels.Contains(currentChannel))
+            {
+                chatBody.Clear();
+                UpdateChatBody(channels[currentChannel]);
+                return;
+            }
             if (!channels.ContainsKey(chanelList.SelectedItem.ToString())) //Si le topic n'existe pas on l'ajoute dans notre dictionnaire
             {
                 channels.Add(currentChannel, new List<Message>());
@@ -370,6 +415,39 @@ namespace Client
             }
 
             return false;
+        }
+
+        private void SendPM_Click(object sender, EventArgs e)
+        {
+            //On vérifie que le client est bien connecté
+            if (comm == null || !comm.Connected)
+            {
+                MessageBox.Show("Vous n'êtes pas connecté");
+                return;
+            }
+            if (usersListBox.SelectedItem == null)
+            {
+                MessageBox.Show("Vous devez selectionner un utilisateur");
+                return;
+            }
+
+            try
+            {
+                if (msgArea.Text != "")
+                {
+                    Utils.Message message = new Utils.Message();
+                    message.author = Nickname;
+                    message.message = msgArea.Text;
+                    message.channel = usersListBox.SelectedItem.ToString();
+                    message.code = 5;
+                    Utils.Utils.sendMsg(comm.GetStream(), message);
+                    msgArea.Clear();
+                }
+            }
+            catch (Exception E)
+            {
+                MessageBox.Show("SendMessage:" + E.Message);
+            }
         }
     }
 }

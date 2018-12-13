@@ -28,6 +28,8 @@ namespace Utils
          * 1 = Pseudo already exist
          * 2 = create new channel
          * 3 = need to clean history
+         * 4 = list users
+         * 5 = Private message
          */
         public int code { get; set; }
 
